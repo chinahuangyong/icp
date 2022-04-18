@@ -5,7 +5,7 @@
 int main() {
 
     ICP icp("/home/huangyong/test/icp/data/bunny1.pcd", "/home/huangyong/test/icp/data/bunny1.pcd");
-    icp.run();
+    icp.runSVDMatch();
 
     return 0;
 }

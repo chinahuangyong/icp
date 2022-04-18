@@ -19,10 +19,6 @@ ICP::ICP(std::string source_pcl_file, std::string target_pcl_file) {
     } else {
         LOG(INFO) << "read target pcd file success";
     }
-
-
-
-
 }
 
 ICP::~ICP() {
@@ -43,7 +39,7 @@ void ICP::setTargetPointCloud(pcl::PointCloud<Point> &pcl_target) {
 }
 
 // 使用SVD进行ICP匹配
-void ICP::run() {
+void ICP::runSVDMatch() {
     //[1] 取出无效点
     std::vector<int> index;
 
@@ -108,5 +104,9 @@ void ICP::run() {
     //[7] 获得平移矩阵
     Eigen::Vector3f transl = target_center_ - R*source_center_;
     std::cout << "transl: " << std::endl << transl << std::endl;
+}
+
+
+void ICP::runOptimationMatch() {
 
 }

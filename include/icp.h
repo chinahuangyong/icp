@@ -11,6 +11,8 @@
 
 #include <eigen3/Eigen/Core>
 
+#include <ceres/ceres.h>
+
 #include <iostream>
 #include <string>
 
@@ -22,7 +24,8 @@ public:
     ~ICP();
     void setSourcePointCloud(pcl::PointCloud<Point> &pcl_source);
     void setTargetPointCloud(pcl::PointCloud<Point> &pcl_target);
-    void run(void);
+    void runSVDMatch(void);
+    void runOptimationMatch(void);
 private:
     std::string source_pcl_file_;
     std::string target_pcl_file_;
