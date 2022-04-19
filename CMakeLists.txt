@@ -16,10 +16,14 @@ link_directories(${CERES_LIBRARY_DIRS})
 
 add_library(icp src/icp.cpp)
 
-add_executable(icp_lib_test src/main.cpp)
+#add_executable(icp_lib_test src/main.cpp)
+#target_link_libraries(icp_lib_test
+#    icp
+#    ${PCL_LIBRARIES}
+#    ${CERES_LIBRARIES}
+#    glog)
 
-target_link_libraries(icp_lib_test
-    icp
-    ${PCL_LIBRARIES}
+add_executable(ceres_test src/ceres_test.cpp)
+target_link_libraries(ceres_test
     ${CERES_LIBRARIES}
     glog)

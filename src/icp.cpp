@@ -106,7 +106,57 @@ void ICP::runSVDMatch() {
     std::cout << "transl: " << std::endl << transl << std::endl;
 }
 
+// Eigen::Isometry3f point2Point_CeresAngleAxis(std::vector<Eigen::Vector3f>& src, std::vector<Eigen::Vector3f>& dst) {
+//
+// }
+
 
 void ICP::runOptimationMatch() {
+    //[1] 取出无效点
+    std::vector<int> index;
+    pcl::removeNaNFromPointCloud(pcl_source_, pcl_source_no_nan_, index);
+    pcl::removeNaNFromPointCloud(pcl_target_, pcl_target_no_nan_, index);
 
+    //[2] 将点云的数据转到Eigen中做进行处理
+    for(auto point : pcl_source_no_nan_.points) {
+        pcl_source_no_nan_vec_.push_back(Eigen::Vector3f(point.x, point.y, point.z));
+    }
+
+    for(auto point : pcl_target_no_nan_.points) {
+        pcl_target_no_nan_vec_.push_back(Eigen::Vector3f(point.x, point.y, point.z));
+    }
+    Eigen::Matrix3d rot;
+    double cam[6] = {0, 0, 0, 0, 0, 0};
+    ceres::Problem problem;
+
+    rot << 0.888773, 0.109188, 0.445154, 0.0959712, 0.905352, -0.413677, -0.448189, 0.410386, 0.794173;
+    ceres::RotationMatrixToAngleAxis(rot.data(), cam);
+
+    cam[3] = -0.0153899;
+    cam[4] = 0.0134463;
+    cam[5] = -0.050712;
+
+    std::cout << cam[0] << ", " << cam[1] << ", " << cam[2] << ", " << cam[3] << ", " << cam[4] << ", " << cam[5] << std::endl;
+
+    // [4]构建误差函数
+    for(int i=0; i<pcl_source_vec_rt_center_.size(); i++) {
+        ceres::CostFunction* cost_function = ICP::Point2PointError_CeresAngleAxis::Create(pcl_source_no_nan_vec_.at(i), pcl_target_no_nan_vec_.at(i));
+        problem.AddResidualBlock(cost_function, nullptr, cam);
+    }
+
+    ceres::Solver::Summary summary;
+    ceres::Solver::Options options;
+    options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
+    options.max_num_iterations = 50;
+    ceres::Solve(options, &problem, &summary);
+    std::cout << summary.FullReport() << std::endl;
+
+    Eigen::Isometry3d poseFinal = Eigen::Isometry3d::Identity();
+
+    ceres::AngleAxisToRotationMatrix(cam, rot.data());
+    poseFinal.linear() = rot;
+    poseFinal.translation() = Eigen::Vector3d(cam[3],cam[4],cam[5]);
+
+    std::cout << "R: "<< std::endl << rot << std::endl;
+    std::cout << "transl: " << std::endl << poseFinal.translation() << std::endl;
 }
